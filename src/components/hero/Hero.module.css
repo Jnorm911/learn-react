@@ -1,0 +1,26 @@
+/* src/app/components/hero/Hero.module.css */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.heroImage {
+  object-fit: cover; /* scales without distortion */
+}
+
+.heroContent {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  color: white;
+  transform: translate(-50%, -50%);
+}
+
+.heroContent h1 {
+  font-size: 3.75rem;
+  font-weight: bold;
+  margin: 0;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
