@@ -1,0 +1,19 @@
+
+
+
+.container {
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  border-radius: 10px;
+  max-width: 350px;
+  margin: 2rem auto;
+}
+
+.heading {
+  margin-bottom: 1rem;
+}
+
+.option {
+  display: block;
+  margin-bottom: 0.75rem;
+}

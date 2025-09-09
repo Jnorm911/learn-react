@@ -1,0 +1,8 @@
+/* ChildPlaceholder.module.css */
+.container {
+    border: 1px dashed gray;
+    width: 50%;
+    padding: 1rem;
+    margin: 0.5rem auto;
+    text-align: center;
+}

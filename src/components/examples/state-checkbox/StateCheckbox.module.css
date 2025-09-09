@@ -1,0 +1,10 @@
+.container {
+  width: 75%;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #fafafa;
+  font-family: sans-serif;
+  margin-top: 10%;
+}

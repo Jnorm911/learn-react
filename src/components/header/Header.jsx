@@ -18,8 +18,8 @@ export default function Header() {
         <Link href="/examples/state-checkbox" className={styles.link}>
           State + Checkboxes
         </Link>
-        <Link href="/examples/local-storage" className={styles.link}>
-          Local Storage
+        <Link href="/examples/task-manager" className={styles.link}>
+          Task Manager
         </Link>
       </nav>
     </header>
