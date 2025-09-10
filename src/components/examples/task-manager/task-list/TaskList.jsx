@@ -8,7 +8,7 @@ const TaskList = ({ tasks, onToggleTask, onEditTask, onRemoveTask }) => {
     <div className={styles.container}>
       <ul>
         {/* map takes each task object from the base state as params */}
-        {tasks.map(({ id, name, completed }) => (
+        {tasks.map(({ id, name, completed, priority, category }) => (
           <li key={id} className={styles.taskRow}>
             <div className={styles.taskContent}>
               <label className={styles.taskLabel}>
@@ -18,7 +18,7 @@ const TaskList = ({ tasks, onToggleTask, onEditTask, onRemoveTask }) => {
                   checked={completed}
                   onChange={() => onToggleTask(id)}
                 />
-                {name}
+                {name} <span>({priority})</span> <em>{category}</em>
               </label>
               {/* each row also has request buttons to edit or remove the task */}
               <button onClick={() => onEditTask(id)}>Edit</button>
@@ -37,6 +37,8 @@ TaskList.propTypes = {
       id: PropTypes.any.isRequired,
       name: PropTypes.string.isRequired,
       completed: PropTypes.bool.isRequired,
+      priority: PropTypes.number,
+      category: PropTypes.string,
     })
   ).isRequired,
   onToggleTask: PropTypes.func.isRequired,

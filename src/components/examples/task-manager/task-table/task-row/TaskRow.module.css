@@ -1,0 +1,30 @@
+/* TaskRow.module.css */
+.actions {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #888;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.buttonDanger {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #b00020;
+  background: #fff5f5;
+  color: #b00020;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.25rem 0.33rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}

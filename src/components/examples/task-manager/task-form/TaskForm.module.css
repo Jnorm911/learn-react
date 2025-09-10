@@ -1,8 +1,59 @@
-/* ChildPlaceholder.module.css */
+/* TaskForm.module.css */
 .container {
-    border: 1px dashed gray;
+    border: 1px solid #ccc;
     width: 50%;
     padding: 1rem;
-    margin: 0.5rem auto;
-    text-align: center;
+    margin: 0.5rem auto 1rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.fieldRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.fieldRowCheckbox {
+    display: flex;
+    align-items: center;
+}
+
+.label {
+    font-weight: 600;
+}
+
+.input,
+.select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.checkboxLabel {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #888;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.error {
+    color: #a40000;
+    margin: 0 0 0.5rem 0;
 }

@@ -1,6 +1,7 @@
 // services/taskService.js
 const API_URL = "https://68bf55439c70953d96ef5630.mockapi.io/api/v1/TaskManager";
 
+// Read (in CRUD)
 export async function fetchTasks() {
   const res = await fetch(API_URL);
   return res.json();

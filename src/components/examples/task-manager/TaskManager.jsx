@@ -2,95 +2,84 @@
 // TaskManager.jsx
 import { useState, useEffect } from "react";
 import styles from "./TaskManager.module.css";
-import { RowList, Row } from "../../ui/RowList/RowList";
-import TaskControls from "./task-controls/TaskControls";
-import TaskForm from "./task-form/TaskForm";
-import TaskList from "./task-list/TaskList";
-import TaskSorter from "./task-sorter/TaskSorter";
-import {
-  fetchTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "../../../services/taskService";
+import TaskTable from "./task-table/TaskTable.jsx";
+import TaskForm from "./task-form/TaskForm.jsx";
+import { fetchTasks, updateTask as apiUpdateTask, deleteTask as apiDeleteTask } from "../../../services/taskService.js";
 
-const TaskManager = () => {
+export default function TaskManager() {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchTasks()
-      .then((data) => {
-        setTasks(Array.isArray(data) ? data : data?.data ?? []);
-      })
-      .catch((err) => console.error(err));
+    let active = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchTasks();
+        if (active) setTasks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (active) setError("Failed to load tasks.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const addTask = (name) => {
-    const newTask = { name, completed: false };
-    createTask(newTask)
-      .then((createdTask) => setTasks((prev) => [...prev, createdTask]))
-      .catch((err) => console.error(err));
-  };
-
-  const toggleTask = (id) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-
-    const updatedTask = { ...task, completed: !task.completed };
-    updateTask(id, updatedTask)
-      .then((data) =>
-        setTasks((prev) => prev.map((t) => (t.id === id ? data : t)))
-      )
-      .catch((err) => console.error(err));
-  };
-
-  const editTask = (id, newName) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-
-    const updatedTask = { ...task, name: newName };
-    updateTask(id, updatedTask)
-      .then((data) =>
-        setTasks((prev) => prev.map((t) => (t.id === id ? data : t)))
-      )
-      .catch((err) => console.error(err));
-  };
-
-  const removeTask = (id) => {
-    deleteTask(id)
-      .then(() => setTasks((prev) => prev.filter((t) => t.id !== id)))
-      .catch((err) => console.error(err));
-  };
 
   return (
     <div className={styles.container}>
       <h1>Task Manager</h1>
-      <RowList>
-        <Row>
-          <TaskControls
-            tasks={tasks}
-            toggleTask={toggleTask}
-            removeTask={removeTask}
-            editTask={editTask}
-          />
-        </Row>
-        <Row>
-          <TaskForm addTask={addTask} />
-        </Row>
-        <Row>
-          <TaskSorter tasks={tasks} setTasks={setTasks} />
-        </Row>
-        <Row>
-          <TaskList
-            tasks={tasks}
-            onToggleTask={toggleTask}
-            onEditTask={editTask}
-            onRemoveTask={removeTask}
-          />
-        </Row>
-      </RowList>
+      {/* Create new tasks */}
+      <TaskForm
+        onAddTask={(newTask) =>
+          setTasks((prev) => (Array.isArray(prev) ? [newTask, ...prev] : [newTask]))
+        }
+      />
+      {loading && <p>Loading tasks…</p>}
+      {error && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      )}
+      {!loading && !error && (
+        <TaskTable
+          tasks={tasks}
+          onToggleTask={async (id) => {
+            try {
+              const current = (tasks || []).find((t) => t?.id === id);
+              if (!current) return;
+              const updated = { ...current, completed: !current.completed };
+              const saved = await apiUpdateTask(id, updated);
+              setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
+            } catch (e) {
+              setError("Failed to update task.");
+            }
+          }}
+          onUpdateTask={async (id, updates) => {
+            try {
+              const current = (tasks || []).find((t) => t?.id === id);
+              if (!current) return;
+              const payload = { ...current, ...updates };
+              const saved = await apiUpdateTask(id, payload);
+              setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
+            } catch (e) {
+              setError("Failed to update task.");
+            }
+          }}
+          onRemoveTask={async (id) => {
+            try {
+              await apiDeleteTask(id);
+              setTasks((prev) => prev.filter((t) => t.id !== id));
+            } catch (e) {
+              setError("Failed to delete task.");
+            }
+          }}
+        />
+      )}
     </div>
   );
-};
-
-export default TaskManager;
+}
