@@ -5,7 +5,9 @@ import styles from "./TaskTable.module.css";
 import TaskRow from "./task-row/TaskRow.jsx";
 
 const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => {
+  // Keep track of which column to sort and direction (ascending/descending)
   const [sort, setSort] = useState({ key: "id", dir: "asc" });
+  // Remember user's preferred sorting option from storage or default to none
   const [sortPref, setSortPref] = useState(() => {
     try {
       const pref = localStorage.getItem("taskTable.sortPref");
@@ -13,16 +15,20 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
     } catch {}
     return "none";
   });
+  // When the preferred sort changes, update the sorting accordingly
   useEffect(() => {
     if (sortPref !== "none") setSort({ key: sortPref, dir: "asc" });
   }, [sortPref]);
 
+  // Update preferred sort when user picks a new option and save it
   const handlePrefChange = (e) => {
     const v = e.target.value;
     setSortPref(v);
     try { localStorage.setItem("taskTable.sortPref", v); } catch {}
   };
+  // Keep track of the search text entered by the user (Array manipulation in the form of a filter)
   const [query, setQuery] = useState("");
+  // Change sorting when user clicks table headers, toggling direction or resetting preference
   const handleHeaderClick = (key) => {
     if (sortPref !== "none") {
       setSortPref("none");
@@ -34,11 +40,12 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
   };
   const arrowFor = (key) => (sort.key === key ? (sort.dir === "asc" ? " ▲" : " ▼") : "");
 
+  // Sort tasks based on selected column and direction
   const sortedRows = useMemo(() => {
     const copy = [...tasks];
     const { key, dir } = sort;
     copy.sort((a, b) => {
-      const av = a?.[key];
+      const av = a?.[key]; //not react prop
       const bv = b?.[key];
       if (av == null && bv == null) return 0;
       if (av == null) return dir === "asc" ? 1 : -1; // nulls last
@@ -54,6 +61,7 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
     return copy;
   }, [tasks, sort]);
 
+  // Show only tasks matching the search text
   const filteredRows = useMemo(() => {
     if (!query) return sortedRows;
     const lowerQuery = query.toLowerCase();
@@ -105,6 +113,7 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
           </tr>
         </thead>
         <tbody>
+          {/* Show a row for each task, or a message if none found */}
           {filteredRows.length === 0 ? (
             <tr className={styles.row}>
               <td className={styles.td} colSpan={6}>No tasks found.</td>

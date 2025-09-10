@@ -1,77 +1,54 @@
 "use client";
-// TaskManager.jsx
+// imports self explanatory
 import { useState, useEffect } from "react";
 import styles from "./TaskManager.module.css";
 import TaskTable from "./task-table/TaskTable.jsx";
 import TaskForm from "./task-form/TaskForm.jsx";
 import { fetchTasks, updateTask as apiUpdateTask, deleteTask as apiDeleteTask } from "../../../services/taskService.js";
-
+// all base components are fucntions in modern React
 export default function TaskManager() {
+// Typical react state for parent componenet, children remain immutable
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+// Empty array([]) means run once on the first render, fetchs the initial tasks
   useEffect(() => {
-    let active = true;
     (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchTasks();
-        if (active) setTasks(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (active) setError("Failed to load tasks.");
-      } finally {
-        if (active) setLoading(false);
-      }
+      const data = await fetchTasks();
+      // set ensures the arrays are correct after user request
+      setTasks(Array.isArray(data) ? data : []);
     })();
-    return () => {
-      active = false;
-    };
   }, []);
 
-  // DRY helper for updating a task via API and merging into state
-  const patchTask = async (id, updates) => {
-    try {
-      const current = tasks.find((t) => t.id === id);
-      if (!current) return;
-      const saved = await apiUpdateTask(id, { ...current, ...updates });
-      setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
-    } catch (e) {
-      setError("Failed to update task.");
-    }
+// Method that ensures all updates (CRUD) work because the ID aligns
+  const updateTask = async (id, updates) => {
+    const current = tasks.find((t) => t.id === id);
+    if (!current) return;
+    const saved = await apiUpdateTask(id, { ...current, ...updates });
+    setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
   };
-
+// returns jsx which happens to look like html but it's really a wrapper. Also this is the orchestrator for the children components, hence the service
   return (
     <div className={styles.container}>
       <h1>Task Manager</h1>
-      {/* Create new tasks */}
+      {/* Child component to create new tasks via child component(CRUD)*/}
       <TaskForm
         onAddTask={(newTask) => setTasks((prev) => [newTask, ...prev])}
       />
-      {loading && <p>Loading tasks…</p>}
-      {error && (
-        <p role="alert" className={styles.error}>
-          {error}
-        </p>
-      )}
-      {!loading && !error && (
-        <TaskTable
-          tasks={tasks}
-          onToggleTask={(id) =>
-            patchTask(id, { completed: !tasks.find((t) => t.id === id)?.completed })
-          }
-          onUpdateTask={(id, updates) => patchTask(id, updates)}
-          onRemoveTask={async (id) => {
-            try {
-              await apiDeleteTask(id);
-              setTasks((prev) => prev.filter((t) => t.id !== id));
-            } catch (e) {
-              setError("Failed to delete task.");
-            }
-          }}
-        />
-      )}
+      <TaskTable
+      // read
+        tasks={tasks}
+        // Special use case becaues I wanted to have a live checkmark instead of true/false column
+        onToggleTask={(id) =>
+          updateTask(id, { completed: !tasks.find((t) => t.id === id)?.completed })
+        }
+        // update any column
+        onUpdateTask={(id, updates) => updateTask(id, updates)}
+        // delete row
+        onRemoveTask={async (id) => {
+          await apiDeleteTask(id);
+          // ensure the array is correct after user request
+          setTasks((prev) => prev.filter((t) => t.id !== id));
+        }}
+      />
     </div>
   );
 }

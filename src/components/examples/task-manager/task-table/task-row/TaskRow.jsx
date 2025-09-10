@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import tableStyles from "../TaskTable.module.css";
 import styles from "./TaskRow.module.css";
 import { PRIORITY_OPTIONS } from "../../../../../services/constants.js";
-
+// conversion of string to int to match api
 const normPriority = (v) => (Number.isFinite(v) ? Math.trunc(v) : 5);
 const asDraft = (t) => ({
   name: t?.name ?? "",
@@ -13,25 +13,34 @@ const asDraft = (t) => ({
   completed: !!t?.completed,
 });
 
+// Destructure the task properties and callback functions from props
 export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask }) {
   const { id, name, category, priority, completed } = task || {};
+
+  // Track whether the row is in editing mode
   const [editing, setEditing] = useState(false);
+
+  // Store a draft copy of the task data for editing
   const [draft, setDraft] = useState(() => asDraft(task));
 
+  // Start editing by resetting the draft and enabling editing mode
   function beginEdit() {
     setDraft(asDraft(task));
     setEditing(true);
   }
 
+  // Update the draft state when a field changes
   function change(field, value) {
     setDraft((d) => ({ ...d, [field]: value }));
   }
 
+  // Save the edited task and exit editing mode
   async function saveEdit() {
     await onUpdateTask?.(id, { ...draft, priority: normPriority(draft.priority) });
     setEditing(false);
   }
 
+  // Render the row with inputs if editing, otherwise show values
   return (
     <tr className={tableStyles.row}>
       <td className={tableStyles.td}>{id ?? "-"}</td>
@@ -116,6 +125,7 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
   );
 }
 
+// Define the expected prop types for clarity and validation
 TaskRow.propTypes = {
   task: PropTypes.shape({
     id: PropTypes.any,

@@ -5,6 +5,7 @@ import styles from "./TaskForm.module.css";
 import { createTask } from "../../../../services/taskService.js";
 import { PRIORITY_OPTIONS } from "../../../../services/constants.js";
 
+// default state before manipulation and after reset
 const initialForm = {
   name: "",
   category: "",
@@ -12,59 +13,47 @@ const initialForm = {
   completed: false,
 };
 
+// method for creating a task via CRUD
 const TaskForm = ({ onAddTask }) => {
-  const [form, setForm] = useState(() => ({ ...initialForm }));
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState(() => ({ ...initialForm }));
+  // React function to assign special id to each datapoint
   const uid = useId();
   const idFor = (s) => `${uid}-${s}`;
-
+// event that handles html style inputs generically to match the api value
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
-    // keep types stable in state
     const next =
       type === "checkbox" ? checked :
       name === "priority" ? Number(value) :
       value;
-    setForm(prev => ({ ...prev, [name]: next }));
+    setFormData(prev => ({ ...prev, [name]: next }));
   }
-
+// focus here
   async function handleSubmit(e) {
     e.preventDefault();
-    const trimmedName = form.name.trim();
+    const trimmedName = formData.name.trim();
     if (!trimmedName) {
-      setError("Task name is required.");
       return;
     }
     try {
-      setSubmitting(true);
-      setError(null);
       const created = await createTask({
         name: trimmedName,
-        category: form.category.trim() || undefined,
-        priority: form.priority,       // already a number
-        completed: !!form.completed,
+        category: formData.category.trim() || undefined,
+        priority: formData.priority,       // already a number
+        completed: !!formData.completed,
       });
       onAddTask?.(created);
-      setForm({ ...initialForm });     // reset with a fresh object
+      setFormData({ ...initialForm });     // reset with a fresh object
     } catch (err) {
-      setError("Failed to create task. Please try again.");
-    } finally {
-      setSubmitting(false);
     }
   }
 
   return (
     <div className={styles.container}>
       <h2>Create Task</h2>
-      {error && (
-        <p id={idFor("error")} role="alert" aria-live="assertive" className={styles.error}>
-          {error}
-        </p>
-      )}
 
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        <fieldset disabled={submitting} className={styles.fieldset}>
+        <fieldset className={styles.fieldset}>
           <div className={styles.fieldRow}>
             <label htmlFor={idFor("name")} className={styles.label}>Name</label>
             <input
@@ -73,11 +62,9 @@ const TaskForm = ({ onAddTask }) => {
               type="text"
               className={styles.input}
               placeholder="e.g., Fix bug #123"
-              value={form.name}
+              value={formData.name}
               onChange={handleChange}
               required
-              aria-invalid={!!error}
-              aria-describedby={error ? idFor("error") : undefined}
             />
           </div>
 
@@ -89,7 +76,7 @@ const TaskForm = ({ onAddTask }) => {
               type="text"
               className={styles.input}
               placeholder="e.g., Engineering"
-              value={form.category}
+              value={formData.category}
               onChange={handleChange}
             />
           </div>
@@ -100,7 +87,7 @@ const TaskForm = ({ onAddTask }) => {
               id={idFor("priority")}
               name="priority"
               className={styles.select}
-              value={form.priority}
+              value={formData.priority}
               onChange={handleChange}
             >
               {PRIORITY_OPTIONS.map((p) => (
@@ -117,7 +104,7 @@ const TaskForm = ({ onAddTask }) => {
                 id={idFor("completed")}
                 name="completed"
                 type="checkbox"
-                checked={form.completed}
+                checked={formData.completed}
                 onChange={handleChange}
               />
               Completed
@@ -126,7 +113,7 @@ const TaskForm = ({ onAddTask }) => {
 
           <div className={styles.actions}>
             <button type="submit" className={styles.button}>
-              {submitting ? "Saving…" : "Add Task"}
+              Add Task
             </button>
           </div>
         </fieldset>

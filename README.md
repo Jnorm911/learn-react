@@ -1,3 +1,13 @@
+## NOTES
+
+Prop: a parameter for a component function (modern React uses functions, not classes). It can be any value int, expressions, functions.
+Hook: a function I import from React (like Python imports)  
+State: any value that can be passed to children, but children are immutable  
+Local Storage: persistent state that remains even after refreshing the browser  
+Effect: extra work after rendering, often async (like Read in CRUD) or simple sync (like console.log) 
+Key: a special prop React uses to track list items (not value/key like in most programming)  
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
