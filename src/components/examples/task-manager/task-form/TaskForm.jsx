@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import PropTypes from "prop-types";
 import styles from "./TaskForm.module.css";
 import { createTask } from "../../../../services/taskService.js";
-import { PRIORITY_OPTIONS } from "../task-table/task-row/TaskRow.jsx";
+import { PRIORITY_OPTIONS } from "../../../../services/constants.js";
 
 const initialForm = {
   name: "",
@@ -17,6 +17,7 @@ const TaskForm = ({ onAddTask }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const uid = useId();
+  const idFor = (s) => `${uid}-${s}`;
 
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
@@ -53,17 +54,11 @@ const TaskForm = ({ onAddTask }) => {
     }
   }
 
-  const nameId = `${uid}-name`;
-  const categoryId = `${uid}-category`;
-  const priorityId = `${uid}-priority`;
-  const completedId = `${uid}-completed`;
-  const errorId = `${uid}-error`;
-
   return (
     <div className={styles.container}>
       <h2>Create Task</h2>
       {error && (
-        <p id={errorId} role="alert" aria-live="assertive" className={styles.error}>
+        <p id={idFor("error")} role="alert" aria-live="assertive" className={styles.error}>
           {error}
         </p>
       )}
@@ -71,9 +66,9 @@ const TaskForm = ({ onAddTask }) => {
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         <fieldset disabled={submitting} className={styles.fieldset}>
           <div className={styles.fieldRow}>
-            <label htmlFor={nameId} className={styles.label}>Name</label>
+            <label htmlFor={idFor("name")} className={styles.label}>Name</label>
             <input
-              id={nameId}
+              id={idFor("name")}
               name="name"
               type="text"
               className={styles.input}
@@ -81,30 +76,28 @@ const TaskForm = ({ onAddTask }) => {
               value={form.name}
               onChange={handleChange}
               required
-              autoComplete="off"
               aria-invalid={!!error}
-              aria-describedby={error ? errorId : undefined}
+              aria-describedby={error ? idFor("error") : undefined}
             />
           </div>
 
           <div className={styles.fieldRow}>
-            <label htmlFor={categoryId} className={styles.label}>Category</label>
+            <label htmlFor={idFor("category")} className={styles.label}>Category</label>
             <input
-              id={categoryId}
+              id={idFor("category")}
               name="category"
               type="text"
               className={styles.input}
               placeholder="e.g., Engineering"
               value={form.category}
               onChange={handleChange}
-              autoComplete="off"
             />
           </div>
 
           <div className={styles.fieldRow}>
-            <label htmlFor={priorityId} className={styles.label}>Priority</label>
+            <label htmlFor={idFor("priority")} className={styles.label}>Priority</label>
             <select
-              id={priorityId}
+              id={idFor("priority")}
               name="priority"
               className={styles.select}
               value={form.priority}
@@ -119,9 +112,9 @@ const TaskForm = ({ onAddTask }) => {
           </div>
 
           <div className={styles.fieldRowCheckbox}>
-            <label htmlFor={completedId} className={styles.checkboxLabel}>
+            <label htmlFor={idFor("completed")} className={styles.checkboxLabel}>
               <input
-                id={completedId}
+                id={idFor("completed")}
                 name="completed"
                 type="checkbox"
                 checked={form.completed}

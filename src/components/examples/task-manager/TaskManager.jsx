@@ -30,14 +30,24 @@ export default function TaskManager() {
     };
   }, []);
 
+  // DRY helper for updating a task via API and merging into state
+  const patchTask = async (id, updates) => {
+    try {
+      const current = tasks.find((t) => t.id === id);
+      if (!current) return;
+      const saved = await apiUpdateTask(id, { ...current, ...updates });
+      setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
+    } catch (e) {
+      setError("Failed to update task.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1>Task Manager</h1>
       {/* Create new tasks */}
       <TaskForm
-        onAddTask={(newTask) =>
-          setTasks((prev) => (Array.isArray(prev) ? [newTask, ...prev] : [newTask]))
-        }
+        onAddTask={(newTask) => setTasks((prev) => [newTask, ...prev])}
       />
       {loading && <p>Loading tasks…</p>}
       {error && (
@@ -48,28 +58,10 @@ export default function TaskManager() {
       {!loading && !error && (
         <TaskTable
           tasks={tasks}
-          onToggleTask={async (id) => {
-            try {
-              const current = (tasks || []).find((t) => t?.id === id);
-              if (!current) return;
-              const updated = { ...current, completed: !current.completed };
-              const saved = await apiUpdateTask(id, updated);
-              setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
-            } catch (e) {
-              setError("Failed to update task.");
-            }
-          }}
-          onUpdateTask={async (id, updates) => {
-            try {
-              const current = (tasks || []).find((t) => t?.id === id);
-              if (!current) return;
-              const payload = { ...current, ...updates };
-              const saved = await apiUpdateTask(id, payload);
-              setTasks((prev) => prev.map((t) => (t.id === id ? saved : t)));
-            } catch (e) {
-              setError("Failed to update task.");
-            }
-          }}
+          onToggleTask={(id) =>
+            patchTask(id, { completed: !tasks.find((t) => t.id === id)?.completed })
+          }
+          onUpdateTask={(id, updates) => patchTask(id, updates)}
           onRemoveTask={async (id) => {
             try {
               await apiDeleteTask(id);

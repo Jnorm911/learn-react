@@ -3,35 +3,24 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import tableStyles from "../TaskTable.module.css";
 import styles from "./TaskRow.module.css";
+import { PRIORITY_OPTIONS } from "../../../../../services/constants.js";
 
-export const PRIORITY_OPTIONS = [
-  { label: "Low", value: 1 },
-  { label: "Medium", value: 5 },
-  { label: "High", value: 10 },
-];
+const normPriority = (v) => (Number.isFinite(v) ? Math.trunc(v) : 5);
+const asDraft = (t) => ({
+  name: t?.name ?? "",
+  category: t?.category ?? "",
+  priority: normPriority(t?.priority),
+  completed: !!t?.completed,
+});
 
 export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask }) {
   const { id, name, category, priority, completed } = task || {};
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({
-    name: name ?? "",
-    category: category ?? "",
-    priority: Number.isFinite(priority) ? Math.trunc(priority) : 5,
-    completed: !!completed,
-  });
+  const [draft, setDraft] = useState(() => asDraft(task));
 
   function beginEdit() {
-    setDraft({
-      name: name ?? "",
-      category: category ?? "",
-      priority: Number.isFinite(priority) ? Math.trunc(priority) : 5,
-      completed: !!completed,
-    });
+    setDraft(asDraft(task));
     setEditing(true);
-  }
-
-  function cancelEdit() {
-    setEditing(false);
   }
 
   function change(field, value) {
@@ -39,13 +28,13 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
   }
 
   async function saveEdit() {
-    await onUpdateTask?.(id, { ...draft, priority: Number.isFinite(draft.priority) ? Math.trunc(draft.priority) : 5 });
+    await onUpdateTask?.(id, { ...draft, priority: normPriority(draft.priority) });
     setEditing(false);
   }
 
   return (
     <tr className={tableStyles.row}>
-      <td className={tableStyles.td}>{String(id ?? "-")}</td>
+      <td className={tableStyles.td}>{id ?? "-"}</td>
       <td className={tableStyles.td}>
         {editing ? (
           <input
@@ -54,7 +43,7 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
             onChange={(e) => change("name", e.target.value)}
           />
         ) : (
-          String(name ?? "-")
+          name ?? "-"
         )}
       </td>
       <td className={tableStyles.td}>
@@ -65,7 +54,7 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
             onChange={(e) => change("category", e.target.value)}
           />
         ) : (
-          String(category ?? "-")
+          category ?? "-"
         )}
       </td>
       <td className={tableStyles.td}>
@@ -82,7 +71,7 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
             ))}
           </select>
         ) : (
-          String(Number.isFinite(priority) ? Math.trunc(priority) : "-")
+          Number.isFinite(priority) ? Math.trunc(priority) : "-"
         )}
       </td>
       <td className={tableStyles.td}>
@@ -107,7 +96,7 @@ export default function TaskRow({ task, onToggleTask, onUpdateTask, onRemoveTask
               <button className={styles.button} onClick={saveEdit}>
                 Save
               </button>
-              <button className={styles.button} onClick={cancelEdit}>
+              <button className={styles.button} onClick={() => setEditing(false)}>
                 Cancel
               </button>
             </>

@@ -6,43 +6,21 @@ import TaskRow from "./task-row/TaskRow.jsx";
 
 const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => {
   const [sort, setSort] = useState({ key: "id", dir: "asc" });
-  const [sortPref, setSortPref] = useState("none"); // none | category | completed
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("taskTable.sort");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.key && parsed.dir) {
-          setSort(parsed);
-          return;
-        }
-      }
-    } catch {}
-    setSort({ key: "priority", dir: "desc" });
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("taskTable.sort", JSON.stringify(sort));
-    } catch {}
-  }, [sort]);
-  // Load persisted preference and apply if set
-  useEffect(() => {
+  const [sortPref, setSortPref] = useState(() => {
     try {
       const pref = localStorage.getItem("taskTable.sortPref");
-      if (pref === "category" || pref === "completed") {
-        setSortPref(pref);
-        setSort({ key: pref, dir: "asc" });
-      }
+      return pref === "category" || pref === "completed" ? pref : "none";
     } catch {}
-  }, []);
+    return "none";
+  });
+  useEffect(() => {
+    if (sortPref !== "none") setSort({ key: sortPref, dir: "asc" });
+  }, [sortPref]);
 
   const handlePrefChange = (e) => {
     const v = e.target.value;
     setSortPref(v);
     try { localStorage.setItem("taskTable.sortPref", v); } catch {}
-    if (v === "none") return;
-    setSort({ key: v, dir: "asc" });
   };
   const [query, setQuery] = useState("");
   const handleHeaderClick = (key) => {
@@ -82,14 +60,6 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
     return sortedRows.filter((task) => task.name.toLowerCase().includes(lowerQuery));
   }, [sortedRows, query]);
 
-  if (filteredRows.length === 0) {
-    return (
-      <div className={styles.container}>
-        <p>No tasks found.</p>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.container}>
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 8 }}>
@@ -113,24 +83,43 @@ const TaskTable = ({ tasks = [], onToggleTask, onUpdateTask, onRemoveTask }) => 
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.th} scope="col" onClick={() => handleHeaderClick("id")} title="Sort by ID">ID{arrowFor("id")}</th>
-            <th className={styles.th} scope="col" onClick={() => handleHeaderClick("name")} title="Sort by Name">Name{arrowFor("name")}</th>
-            <th className={styles.th} scope="col" onClick={() => handleHeaderClick("category")} title="Sort by Category">Category{arrowFor("category")}</th>
-            <th className={styles.th} scope="col" onClick={() => handleHeaderClick("priority")} title="Sort by Priority">Priority{arrowFor("priority")}</th>
-            <th className={styles.th} scope="col" onClick={() => handleHeaderClick("completed")} title="Sort by Completed">Completed{arrowFor("completed")}</th>
+            {[
+              { key: "id", label: "ID" },
+              { key: "name", label: "Name" },
+              { key: "category", label: "Category" },
+              { key: "priority", label: "Priority" },
+              { key: "completed", label: "Completed" },
+            ].map((c) => (
+              <th
+                key={c.key}
+                className={styles.th}
+                scope="col"
+                onClick={() => handleHeaderClick(c.key)}
+                title={`Sort by ${c.label}`}
+              >
+                {c.label}
+                {arrowFor(c.key)}
+              </th>
+            ))}
             <th className={styles.th} scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {filteredRows.map((task, idx) => (
-            <TaskRow
-              key={task?.id ?? idx}
-              task={task}
-              onToggleTask={onToggleTask}
-              onUpdateTask={onUpdateTask}
-              onRemoveTask={onRemoveTask}
-            />
-          ))}
+          {filteredRows.length === 0 ? (
+            <tr className={styles.row}>
+              <td className={styles.td} colSpan={6}>No tasks found.</td>
+            </tr>
+          ) : (
+            filteredRows.map((task, idx) => (
+              <TaskRow
+                key={task?.id ?? idx}
+                task={task}
+                onToggleTask={onToggleTask}
+                onUpdateTask={onUpdateTask}
+                onRemoveTask={onRemoveTask}
+              />
+            ))
+          )}
         </tbody>
       </table>
     </div>
